@@ -1,0 +1,42 @@
+/* allow map to fill viewport */
+html, body, #map-canvas, .container-fluid
+{
+    /* height of these elements */
+    height: 100%;
+
+    /* no margin around these elements */
+    margin: 0;
+
+    /* disable scrollbars */
+    overflow: hidden;
+
+    /* no padding within these elements */
+    padding: 0;
+}
+body{
+    background-color: darkgray;
+}
+#map-canvas
+{
+    width: 60% !important;
+    height : 58% !important;
+    margin: auto;
+    padding: 3px;
+}
+ul,li
+{
+    list-style-type:none !important;
+    margin: auto;
+}
+/* center form */
+form
+{
+    /* position form "absolutely" where we want it */
+
+    /* distance from top edge of viewport */
+    padding: 5px;
+    /* form's width */
+    width: 100%;
+
+    margin: auto;
+}
