@@ -1,6 +1,6 @@
 /*
 * JS script for disease map
-* You are about to dive into 230+ lines of complete and utter crap code.
+* You are about to dive into 230+ lines of complete and utter cr*p code.
 * Best of Luck!
  */
 
@@ -98,8 +98,8 @@ function addMarker(data)
     // icon for the marker
     var image = "http://maps.google.com/mapfiles/kml/pal4/icon63.png";
 
-    // if taluka is give set district = none or vice-versa
-    if (taluka) {
+    // if taluka is given set district = none or vice-versa
+    if (taluka && !firstTime) { // if it's firstTime we are searching for data about districts
         district = "none"
         taluka = data[0]["address_components"][0]["short_name"];
     }
