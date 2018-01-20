@@ -200,7 +200,7 @@ function update(place)
     for(var i = 0; i <place.length; i++) {
         var parameters = {
             address: place[i] + ",Gujarat",
-            key: "Your Google Map API key goes here." 
+            key: key
         };
 
 
