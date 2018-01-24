@@ -1,7 +1,7 @@
 /*
 * JS script for disease map
-* You are about to dive into 230+ lines of complete and utter cr*p code.
-* Best of Luck!
+*
+* Add a module docstring
  */
 
 
@@ -235,7 +235,7 @@ function update(place)
         But the app just doesnt work in desired way without duplication.
         You are most welcome to try debugging it.
      */
-    if(firstTime) {
+    if(firstTime) {//FIX ME
         var heatmap = new google.maps.visualization.HeatmapLayer({
             data: heatMapData
         });
