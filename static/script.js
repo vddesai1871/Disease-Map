@@ -24,7 +24,7 @@ $(function() {
     // styles for map
     // https://developers.google.com/maps/documentation/javascript/styling
     var styles = [
-        // hide Google's labels
+     /*   // hide Google's labels
         {
             featureType: "all",
             elementType: "labels",
@@ -39,18 +39,34 @@ $(function() {
             stylers: [
                 {visibility: "off"}
             ]
-        }
-    ];
+        }*/
+        
+  {
+    "featureType": "poi.medical",
+    "stylers": [
+      {
+        "color": "#0000ff"
+      },
+      {
+        "visibility": "simplified"
+      },
+      {
+        "weight": 6.5
+      }
+    ]
+  }
+]
+    ;
     // options for map
     // https://developers.google.com/maps/documentation/javascript/reference#MapOptions
     var options = {
         center: {lat: 23.0587, lng: 72.1924},
-        disableDefaultUI: true,
-        mapTypeId:google.maps.MapTypeId.HYBRID,
+        disableDefaultUI: false,
+        mapTypeId:google.maps.MapTypeId.ROADMAP,
         maxZoom: 14,
         panControl: true,
         styles: styles,
-        zoom: 6,
+        zoom: 7,
         zoomControl: true
     };
 
@@ -140,7 +156,11 @@ function addMarker(data)
 		// listen for clicks on marker
         google.maps.event.addListener(marker, 'click', function() {
             showInfo(marker, content);
-		});
+            var pos = map.getZoom(); 
+            map.setZoom(12);
+            map.setCenter(marker.getPosition());
+		    window.setTimeout(function(){map.setZoom(pos);},3000);
+        });
     // add marker to the map markers
     markers.push(marker);
 }
