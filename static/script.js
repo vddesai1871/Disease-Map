@@ -231,6 +231,7 @@ function update(place)
        //removes heatmaps
        for(var i = 0;i < heatMaps.length;i++)
             heatMaps[i].setMap(null);
+       //remove circles
        for (var i = 0; i < circles.length; i++)
            circles[i].setMap(null);
     heatMapData = [];
