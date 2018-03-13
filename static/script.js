@@ -15,32 +15,48 @@ var findMyLatLng;
 var month = 'november';
 var firstTime = true; // true if it's the first session of user
 var markers = [];  // markers for map
+var circles = [];
 var heatMaps = []; // heatmaps for map
 var info = new google.maps.InfoWindow(); // info window
 var heatMapData = []; // stores data about where to draw heatmap i.e. latitude, longitude etc.
+var intense = 0;
 
 // execute when the DOM is fully loaded
 $(function() {
     // styles for map
     // https://developers.google.com/maps/documentation/javascript/styling
-    var styles = [
-        // hide Google's labels
+     var styles = [
+      // hide Google's labels
         {
-            featureType: "all",
-            elementType: "labels",
-            stylers: [
-                {visibility: "off"}
+            "featureType": "all",
+            "elementType": "labels",
+            "stylers": [
+                {"visibility": "off"}
             ]
         },
         // hide roads
         {
-            featureType: "road",
-            elementType: "geometry",
-            stylers: [
-                {visibility: "off"}
+            "featureType": "road",
+            "elementType": "geometry",
+            "stylers": [
+                {"visibility": "off"}
             ]
-        }
-    ];
+        },
+
+  {
+    "featureType": "poi.medical",
+    "stylers": [
+      {
+        "color": "#FFFF00"
+      },
+      {
+        "visibility": "simplified"
+      },
+      {
+        "weight": 6.5
+      }
+    ]
+  }];
     // options for map
     // https://developers.google.com/maps/documentation/javascript/reference#MapOptions
     var options = {
@@ -116,6 +132,7 @@ function addMarker(data)
 
     //set content to be displayed in info window
     var content = "<ul><li>  <b>" + data[0]["address_components"][0]["short_name"] +" </b></li>";
+    intense = 0;
     for(var i = 0; i < diseases.length; i++) {
 
         var param = {
@@ -127,9 +144,12 @@ function addMarker(data)
 
         $.getJSON(Flask.url_for('update'), param)
             .done(function (res) {
+                intense += res[0][0];
+                console.log(intense);
                 content += "<li> " + res[1].charAt(0).toUpperCase() + res[1].slice(1) +"  :  <b>  " + res[0][0] + " </b></li> ";
             });
-    } // instantiate marker
+    }
+    // instantiate marker
     content += "</ul>";
     var marker = new google.maps.Marker({
         position: myLatLng,
@@ -137,9 +157,25 @@ function addMarker(data)
         title: data[0]['formatted_address'],
         icon : image
     });
+    var cityCircle = new google.maps.Circle({
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#FF0000',
+            fillOpacity: 0.05,
+            map: map,
+            center: new google.maps.LatLng(data[0]['geometry']['location']['lat'], data[0]['geometry']['location']['lng']),
+            radius: 10000
+          });
+    circles.push(cityCircle);
+    console.log(intense);
+
+
 		// listen for clicks on marker
         google.maps.event.addListener(marker, 'click', function() {
             showInfo(marker, content);
+            map.setZoom(12);
+            map.setCenter(marker.getPosition());
 		});
     // add marker to the map markers
     markers.push(marker);
@@ -195,6 +231,8 @@ function update(place)
        //removes heatmaps
        for(var i = 0;i < heatMaps.length;i++)
             heatMaps[i].setMap(null);
+       for (var i = 0; i < circles.length; i++)
+           circles[i].setMap(null);
     heatMapData = [];
 
     for(var i = 0; i <place.length; i++) {
@@ -214,6 +252,7 @@ function update(place)
                 //The code below this line is written by my evil twin so there's lot of weird magic going down there ,of which i am no responsible
 
                  if(!firstTime) {
+                     map.setCenter(new google.maps.LatLng(data['results'][0]['geometry']['location']['lat'], data['results'][0]['geometry']['location']['lng']));
                      var heatmap = new google.maps.visualization.HeatmapLayer({
                          data: heatMapData
                      });

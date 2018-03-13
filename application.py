@@ -1,4 +1,3 @@
-from os import environ
 import sqlite3
 from flask import Flask, jsonify, render_template, request
 from flask_jsglue import JSGlue
@@ -42,7 +41,7 @@ conn = create_connection("geo.db")
 def index():
     """Render map."""
 
-    return render_template("index.html", key=environ.get("API_KEY"))
+    return render_template("index.html", key="AIzaSyACDm3wWsEcuITsCs9kqNrE2bQ-J7a0Bvs")
 
 
 @app.route("/update")
