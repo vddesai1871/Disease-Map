@@ -8,11 +8,12 @@
 //too many gloabl variables :(
 
 var map;  // For instance of Google Map
-var taluka;
-var district;
-var disease;
-var findMyLatLng;
-var month = 'november';
+var taluka="ahmedabad_city";
+var district="ahmedabad";
+var disease="malaria";
+var week="1";
+var age="all";
+var month = '8';
 var firstTime = true; // true if it's the first session of user
 var markers = [];  // markers for map
 var circles = [];
@@ -20,6 +21,21 @@ var heatMaps = []; // heatmaps for map
 var info = new google.maps.InfoWindow(); // info window
 var heatMapData = []; // stores data about where to draw heatmap i.e. latitude, longitude etc.
 var intense = 0;
+var august = [];
+var september = [];
+
+        var param = {
+        disease: disease,
+        district: district,
+        taluka: taluka,
+    };
+         $.getJSON(Flask.url_for('sum'), param)
+        .done(function (res) {
+            august = res[0];
+            september = res[1];
+            console.log(res[0]);
+
+        });
 
 // execute when the DOM is fully loaded
 $(function() {
@@ -63,7 +79,7 @@ $(function() {
         center: {lat: 23.0587, lng: 72.1924},
         disableDefaultUI: true,
         mapTypeId:google.maps.MapTypeId.HYBRID,
-        maxZoom: 14,
+        maxZoom: 23,
         panControl: true,
         styles: styles,
         zoom: 6,
@@ -79,30 +95,22 @@ $(function() {
     google.maps.event.addListenerOnce(map, "idle" /*sambar*/, update);
 
     // clear the district field if user is filling the taluka field
-    $("#taluka").keydown(function(){
-        $("#district").val("");
-    });
-    // same as above.....
-     $("#district").keydown(function(){
-        $("#taluka").val("");
-    });
-    var button = $(".btn");
+
+    var button = $("#submit_form");
     // send an api request for data with values taken from user as form input
     button.on("click",function (){
         district = $("#district").val();
         disease = $("#disease").val();
         taluka = $("#taluka").val();
         month = $("#month").val();
+        week = $("#week").val();
+        age = $("#age").val();
         firstTime = false; // the user clicked on form submit so his first session ends here
-        if(taluka) //
-            findMyLatLng = taluka;
-        else
-            findMyLatLng = district;
-        google.maps.event.addListenerOnce(map, "idle", update(findMyLatLng));
+        google.maps.event.addListenerOnce(map, "idle", update(taluka));
         return false; // to avoid page from reloading
     });
 });
-
+console.log(window.aug);
 /**
  * Adds marker for place to map.
  */
@@ -115,40 +123,69 @@ function addMarker(data)
     var image = "http://maps.google.com/mapfiles/kml/pal4/icon63.png";
 
     // if taluka is given set district = none or vice-versa
-    if (taluka && !firstTime) { // if it's firstTime we are searching for data about districts
-        district = "none"
-        taluka = data[0]["address_components"][0]["short_name"];
-    }
-    else {
-        taluka = "none"
-        district = data[0]["address_components"][0]["short_name"];
-    }
-    var diseases = [];
-    if (firstTime || disease == "all")
-        diseases = ["malaria", "typhoid", "dengue", "cholera", "hepatitis"];
 
-    else
-        diseases = [disease];
+        var para = {
+        disease: disease,
+        district: district,
+        taluka: taluka,
+    };
+         $.getJSON(Flask.url_for('sum'), para)
+        .done(function (res) {
+            august = res[0];
+            september = res[1];
+            console.log(res[0]);
+
+        });
 
     //set content to be displayed in info window
-    var content = "<ul><li>  <b>" + data[0]["address_components"][0]["short_name"] +" </b></li>";
+    var content = "<ul><li>  <b>" + taluka +" </b></li>";
     intense = 0;
-    for(var i = 0; i < diseases.length; i++) {
 
         var param = {
-            disease: diseases[i],
+            disease: disease,
             district: district,
             taluka: taluka,
-            month: month
+            month: month,
+            week: week,
+            age: age
         };
-
+        ag = august;
+        s = september;
+        content = "<ul>";
         $.getJSON(Flask.url_for('update'), param)
             .done(function (res) {
-                intense += res[0][0];
-                console.log(intense);
-                content += "<li> " + res[1].charAt(0).toUpperCase() + res[1].slice(1) +"  :  <b>  " + res[0][0] + " </b></li> ";
+
+                console.log(ag);
+                console.log(s);
+                if (age!="all") {
+                    content += "<li> Taluka  :  <b>  " + res[0] + " </b></li> ";
+                    content += "<li> Cases  :  <b>  " + res[7] + " </b></li> ";
+                    content += "<li> Population  :  <b>  " + res[5] + " </b></li> ";
+                    console.log(august[1]);
+                    console.log(august[1] - august[0]);
+
+
+                    var ans = (res[0][3]*100/res[0][5]);
+                    var a = ans.toFixed(5);
+                    content += "<li> Number of cases per 100 persons  :  <b>  " + res[10] + " </b></li> </hr>";
+                    content += "<li> Average Temperature  :  <b>  " + res[1] + "  &deg;C </b></li> ";
+                    content += "<li> Rainfall  :  <b>  " + res[2] + " mm </b></li> ";
+                    content += "<li> Relative humidity  :  <b>  " + res[4] + " %</b></li> ";
+                    content += "<li> Altitude  :  <b>  " + res[6] + " m</b></li> ";
+                }
+                else{
+                    content += "<li> Taluka  :  <b>  " + res[2] + " </b></li> ";
+                    content += "<li> Cases  :  <b>  " + res[3] + " </b></li> ";
+                    content += "<li> Population  :  <b>  " + res[7] + " </b></li> ";
+                    content += "<li> Number of cases per 100 persons  :  <b>  " + res[17] + " </b></li> ";
+                    content += "<li> Average Temperature  :  <b>  " + res[4] + " &deg;C</b></li> ";
+                    content += "<li> Rainfall  :  <b>  " + res[5] + " mm</b></li> ";
+                    content += "<li> Relative humidity  :  <b>  " + res[6] + " %</b></li> ";
+                    content += "<li> Altitude  :  <b>  " + res[8] + " m</b></li> ";
+                }
+
             });
-    }
+
     // instantiate marker
     content += "</ul>";
     var marker = new google.maps.Marker({
@@ -168,13 +205,12 @@ function addMarker(data)
             radius: 10000
           });
     circles.push(cityCircle);
-    console.log(intense);
 
 
 		// listen for clicks on marker
         google.maps.event.addListener(marker, 'click', function() {
             showInfo(marker, content);
-            map.setZoom(12);
+            map.setZoom(15);
             map.setCenter(marker.getPosition());
 		});
     // add marker to the map markers
@@ -224,9 +260,7 @@ function showInfo(marker, content)
 function update(place)
 {
     if(firstTime)
-        place = ["Ahmedabad", "Rajkot", "Surat", "Vadodara", "Jamnagar", "Bhavnagar", "Junagadh", "Gandhinagar"];
-    else
-        place = [place];
+        place = "ahmedabad_city";
     removeMarkers();
        //removes heatmaps
        for(var i = 0;i < heatMaps.length;i++)
@@ -236,10 +270,9 @@ function update(place)
            circles[i].setMap(null);
     heatMapData = [];
 
-    for(var i = 0; i <place.length; i++) {
         var parameters = {
-            address: place[i] + ",Gujarat",
-            key: key
+            address: place + ",Gujarat",
+            key: "AIzaSyACDm3wWsEcuITsCs9kqNrE2bQ-J7a0Bvs"
         };
 
 
@@ -283,6 +316,7 @@ function update(place)
         heatmap.set('radius', 30);
         heatmap.set('opacity', 0.3);
         heatmap.setMap(map);
-    }
+
 
 }
+
