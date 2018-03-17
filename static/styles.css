@@ -8,13 +8,13 @@ html, body, #map-canvas, .container-fluid
     margin: 0;
 
     /* disable scrollbars */
-    overflow: hidden;
+
 
     /* no padding within these elements */
     padding: 0;
 }
 body{
-    background-color: darkgray;
+    background-color:white;
 }
 #map-canvas
 {
