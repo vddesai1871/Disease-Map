@@ -34,7 +34,7 @@ def create_connection(db_file):
     return None
 
 
-conn = create_connection("geo.db")
+conn = create_connection("Book2.db")
 
 
 @app.route("/")
@@ -137,37 +137,72 @@ def update():
     cur = conn.cursor()
     if age == "all":
         cur = conn.cursor()
-        cur.execute("SELECT * FROM Sheet1 WHERE taluka=? AND week=?",(taluka,week,))
+        cur.execute("SELECT * FROM Sheet1 WHERE taluka=? AND week=? AND month=?",(taluka,week,month,))
         rows = cur.fetchall()
-        rows.append(disease)
+        list = []
+        for i in rows[0]:
+            list.append(i)
+        list[7] = float(list[7])
+        list.append(round(list[3]*100/list[7],3))
         cur.close()
     else:
         cur = conn.cursor()
-        cur.execute("SELECT taluka, temperature FROM Sheet1 WHERE taluka=? AND week=?", (taluka, week))
-    if taluka != "none":
-        # if distict parameter is not given
-        cur = conn.cursor()
-        if ' ' in taluka:
-            t,x = taluka.split(' ')
-            taluka = t.capitalize() + ' ' + x.capitalize()
-        else:
-            taluka = taluka.capitalize()
-        cur.execute("SELECT " + disease +" FROM "+ month +"\
-            WHERE taluka=?",(taluka,))
+        if age == "age55%2B":
+            age == "age55+"
+        cur.execute("SELECT taluka, temperature, rain, noofcase, humidity, population, sealevel,"+ age +" ,msex,fsex FROM Sheet1 WHERE taluka=? AND week=? AND month=?", (taluka, week, month))
         rows = cur.fetchall()
-        rows.append(disease)
+        list = []
+        for i in rows[0]:
+            list.append(i)
+        list[5] = float(list[5])
+        list.append(round(list[3]*100/list[5],3))
         cur.close()
 
-    else:
-        # If district parameter is given
-        district = district.capitalize()
+    return jsonify(list)
+
+@app.route("/sum")
+def sum():
+    """Updates data"""
+
+    # ensure parameters are present
+    if not request.args.get("disease"):
+        raise RuntimeError("missing disease")
+    if not request.args.get("district"):
+        raise RuntimeError("missing district")
+    if not request.args.get("taluka"):
+        raise RuntimeError("missing taluka")
+
+
+    whitelist = ['malaria', 'dengue', 'typhoid', 'cholera', 'hepatitis']
+    months = ['8','9']
+    disease = request.args.get("disease")
+    month = request.args.get("month")
+    taluka = request.args.get("taluka")
+
+    if disease not in whitelist:
+        disease = 'malaria'
+
+    aug = []
+    sep = []
+    for week in ['1','2','3','4']:
         cur = conn.cursor()
-        # ATTENTION : This is the worst SQL query you'll see in you life
-        cur.execute("SELECT sum("+disease+") FROM "+month+" WHERE district=?",(district, ))
+        cur.execute("SELECT noofcase FROM Sheet1 WHERE taluka=? AND week=? AND month=8", (taluka, week,))
         rows = cur.fetchall()
-        rows.append(disease)
+        tmp = rows[0][0]
+        aug.append(tmp)
         cur.close()
 
-    return jsonify(rows)
-    # output places as JSON
-    #return jsonify(rows.json())
+    for week in ['1','2','3','4']:
+        cur = conn.cursor()
+        cur.execute("SELECT noofcase FROM Sheet1 WHERE taluka=? AND week=? AND month=9", (taluka, week,))
+        rows = cur.fetchall()
+        tmp = rows[0][0]
+        sep.append(tmp)
+        cur.close()
+    print(aug)
+    print(sep)
+    l = []
+    l.append(aug)
+    l.append(sep)
+    return jsonify(l)
+
